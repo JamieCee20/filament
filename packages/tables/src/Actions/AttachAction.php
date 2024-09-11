@@ -297,12 +297,14 @@ class AttachAction extends Action
                 ->all();
         };
 
+        $getRecordOptionsLimit = fn () => $this->getRecordOptionsLimit();
+
         $select = Select::make('recordId')
             ->label(__('filament-actions::attach.single.modal.fields.record_id.label'))
             ->required()
             ->multiple($this->isMultiple())
             ->searchable($this->getRecordSelectSearchColumns() ?? true)
-            ->getSearchResultsUsing(static fn (Select $component, string $search): array => $getOptions(optionsLimit: $this->getRecordOptionsLimit(), search: $search, searchColumns: $component->getSearchColumns()))
+            ->getSearchResultsUsing(static fn (Select $component, string $search, int $getRecordOptionsLimit): array => $getOptions(optionsLimit: $getRecordOptionsLimit, search: $search, searchColumns: $component->getSearchColumns()))
             ->getOptionLabelUsing(function ($value) use ($table): string {
                 $relationship = Relation::noConstraints(fn () => $table->getRelationship());
 
@@ -319,7 +321,7 @@ class AttachAction extends Action
                     ->mapWithKeys(fn (Model $record): array => [$record->getKey() => $this->getRecordTitle($record)])
                     ->all();
             })
-            ->options(fn (Select $component): array => $this->isRecordSelectPreloaded() ? $getOptions(optionsLimit: $this->getRecordOptionsLimit()) : [])
+            ->options(fn (Select $component, int $getRecordOptionsLimit): array => $this->isRecordSelectPreloaded() ? $getOptions(optionsLimit: $getRecordOptionsLimit) : [])
             ->hiddenLabel();
 
         if ($this->modifyRecordSelectUsing) {
